@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julius Clothes Import</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Animación para el parpadeo del logo */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .animate-blink {
+            animation: blink 1.5s infinite alternate;
+        }
+
+        /* Animación para el mensaje */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.5s ease-out forwards;
+        }
+
+        /* Estilos para el modal del carrito */
+        .cart-modal-overlay {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .cart-modal-overlay.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .cart-modal-content {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .cart-modal-content.open {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 font-sans text-gray-800">
+
+    <header class="bg-gradient-to-r from-purple-700 to-indigo-800 text-white p-6 shadow-xl rounded-b-3xl">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="text-purple-200 animate-blink"
+                >
+                    <path
+                        d="M12 2L2 7V17L12 22L22 17V7L12 2ZM12 4.3L19.5 8.5L12 12.7L4.5 8.5L12 4.3ZM4 9.5L11 13.5V20.5L4 16.5V9.5ZM13 20.5V13.5L20 9.5V16.5L13 20.5Z"
+                        fill="currentColor"
+                    />
+                </svg>
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide drop-shadow-lg">
+                    <span class="text-purple-200">Julius</span> <span class="text-white">Clothes Import</span>
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <div id="message-container" class="fixed top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-fade-in-down hidden">
+            <!-- Mensajes se mostrarán aquí -->
+        </div>
+
+        <div class="grid grid-cols-1">
+            <section class="bg-white p-6 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold text-center text-purple-800 mb-8">Nuestros Productos</h2>
+                <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Las tarjetas de productos se renderizarán aquí por JavaScript -->
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Floating WhatsApp Icon -->
+    <button id="whatsapp-icon" class="fixed bottom-24 right-8 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-300 z-40" aria-label="Contactar por WhatsApp">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-8 w-8"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+        >
+            <path d="M12.04 2C7.05 2 3 6.03 3 11.02c0 1.74.5 3.37 1.36 4.79L3.1 21.02l5.41-1.42c1.36.74 2.92 1.13 4.53 1.13c4.99 0 9.04-4.03 9.04-9.02S17.03 2 12.04 2zm0 1.6c4.14 0 7.5 3.33 7.5 7.46c0 4.13-3.36 7.47-7.5 7.47c-1.24 0-2.43-.3-3.48-.86l-.25-.15-2.65.7.71-2.58-.17-.26c-.84-1.3-1.29-2.82-1.29-4.42c0-4.13 3.36-7.46 7.5-7.46zm-3.43 4.63c-.22 0-.44.07-.62.24c-.17.17-.28.4-.35.65c-.07.25-.09.52-.02.78c.07.27.2.5.37.7l1.7 1.66c.17.17.37.28.59.35c.22.07.45.09.68.02c.23-.07.45-.2.62-.37l.03-.03c.17-.17.28-.37.35-.59c.07-.22.09-.45.02-.68c-.07-.23-.2-.45-.37-.62l-1.66-1.7c-.17-.17-.37-.28-.59-.35c-.22-.07-.45-.09-.68-.02zM15.5 13.98c-.17.17-.37.28-.59.35c-.22.07-.45.09-.68.02c-.23-.07-.45-.2-.62-.37l-1.66-1.7c-.17-.17-.28-.37-.35-.59c-.07-.22-.09-.45-.02-.68c.07-.23.2-.45.37-.62l1.7-1.66c.17-.17.37-.28.59.35c.22-.07.45-.09.68-.02c.23.07.45.2.62.37l.03.03c.17.17.28.37.35.59c.07.22.09.45.02.68c-.07.23-.2.45-.37.62z"/>
+        </svg>
+    </button>
+
+    <!-- Floating Cart Icon -->
+    <button id="floating-cart-icon" class="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-full shadow-lg transition duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-purple-300 z-40" aria-label="Abrir carrito de compras">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+        >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span id="cart-item-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full hidden">
+            0
+        </span>
+    </button>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal-overlay" class="cart-modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div id="cart-modal-content" class="cart-modal-content fixed right-0 top-0 h-full w-full max-w-sm bg-white shadow-2xl p-6 overflow-y-auto">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-3xl font-bold text-purple-800">Tu Carrito</h2>
+                <button id="close-cart-modal" class="text-gray-500 hover:text-gray-700 text-3xl font-bold" aria-label="Cerrar carrito">
+                    &times;
+                </button>
+            </div>
+            <div id="cart-items-container">
+                <!-- Los artículos del carrito se renderizarán aquí por JavaScript -->
+            </div>
+            <div id="empty-cart-message" class="text-center text-gray-600 py-10">Tu carrito está vacío.</div>
+
+            <div id="cart-summary" class="border-t border-gray-200 pt-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xl font-semibold text-gray-900">Total:</span>
+                    <span id="cart-total" class="text-3xl font-bold text-purple-800">$0.00</span>
+                </div>
+                <div class="flex items-center space-x-2 mb-4">
+                    <input type="text" id="discount-code-input" placeholder="Código de Descuento" class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200">
+                    <button id="apply-discount-button" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-5 rounded-lg transition duration-300 transform hover:scale-105 shadow-md">
+                        Aplicar
+                    </button>
+                </div>
+                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-md mt-4">
+                    Proceder al Pago
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global state variables
+        let products = [];
+        let cartItems = [];
+        let discountCode = '';
+        let discountApplied = 0;
+        let messageTimeoutId = null;
+        let isCartOpen = false;
+
+        // DOM elements
+        const productListDiv = document.getElementById('product-list');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const cartSummaryDiv = document.getElementById('cart-summary');
+        const cartTotalSpan = document.getElementById('cart-total');
+        const discountCodeInput = document.getElementById('discount-code-input');
+        const applyDiscountButton = document.getElementById('apply-discount-button');
+        const messageContainer = document.getElementById('message-container');
+        const floatingCartIcon = document.getElementById('floating-cart-icon');
+        const cartItemCountSpan = document.getElementById('cart-item-count');
+        const cartModalOverlay = document.getElementById('cart-modal-overlay');
+        const cartModalContent = document.getElementById('cart-modal-content');
+        const closeCartModalButton = document.getElementById('close-cart-modal');
+        const whatsappIcon = document.getElementById('whatsapp-icon');
+
+        // Firebase variables
+        let firebaseApp;
+        let db;
+        let auth;
+        let userId;
+        let isAuthReady = false;
+
+        // Initialize Firebase
+        async function initializeFirebase() {
+            try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                firebaseApp = initializeApp(firebaseConfig);
+                db = getFirestore(firebaseApp);
+                auth = getAuth(firebaseApp);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                    } else {
+                        try {
+                            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                            userId = auth.currentUser?.uid || crypto.randomUUID();
+                        } catch (error) {
+                            console.error("Error al iniciar sesión:", error);
+                            userId = crypto.randomUUID(); // Fallback to a random ID if auth fails
+                        }
+                    }
+                    isAuthReady = true;
+                });
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                isAuthReady = true;
+            }
+        }
+
+        // Function to display messages
+        function showMessage(msg) {
+            if (messageTimeoutId) {
+                clearTimeout(messageTimeoutId);
+            }
+            messageContainer.textContent = msg;
+            messageContainer.classList.remove('hidden');
+            messageTimeoutId = setTimeout(() => {
+                messageContainer.classList.add('hidden');
+                messageTimeoutId = null;
+            }, 2000);
+        }
+
+        // Render product cards
+        function renderProducts() {
+            productListDiv.innerHTML = ''; // Clear existing products
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'bg-gray-50 border border-gray-200 rounded-xl shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl';
+                productCard.innerHTML = `
+                    <img
+                        src="${product.imageUrl}"
+                        alt="${product.name}"
+                        class="w-full h-48 object-cover"
+                        onerror="this.onerror=null;this.src='https://placehold.co/300x300/F0F0F0/333333?text=${encodeURIComponent(product.name)}';"
+                    />
+                    <div class="p-5">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">${product.name}</h3>
+                        <p class="text-purple-700 text-2xl font-bold mb-4">$${product.price.toFixed(2)}</p>
+                        <button data-product-id="${product.id}" class="add-to-cart-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-md">
+                            Añadir al Carrito
+                        </button>
+                    </div>
+                `;
+                productListDiv.appendChild(productCard);
+            });
+
+            // Add event listeners to "Add to Cart" buttons
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const productId = event.target.dataset.productId;
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        addToCart(product);
+                    }
+                });
+            });
+        }
+
+        // Render cart items
+        function renderCart() {
+            cartItemsContainer.innerHTML = ''; // Clear existing cart items
+            if (cartItems.length === 0) {
+                emptyCartMessage.classList.remove('hidden');
+                cartSummaryDiv.classList.add('hidden');
+            } else {
+                emptyCartMessage.classList.add('hidden');
+                cartSummaryDiv.classList.remove('hidden');
+                cartItems.forEach(item => {
+                    const cartItemLi = document.createElement('li');
+                    cartItemLi.className = 'py-4 flex items-center justify-between';
+                    cartItemLi.innerHTML = `
+                        <div class="flex items-center">
+                            <img
+                                src="${item.imageUrl}"
+                                alt="${item.name}"
+                                class="w-16 h-16 rounded-lg object-cover mr-4"
+                                onerror="this.onerror=null;this.src='https://placehold.co/64x64/F0F0F0/333333?text=${encodeURIComponent(item.name)}';"
+                            />
+                            <div>
+                                <h4 class="font-semibold text-gray-900">${item.name}</h4>
+                                <p class="text-sm text-gray-600">
+                                    $${item.price.toFixed(2)} x ${item.quantity}
+                                </p>
+                            </div>
+                        </div>
+                        <button data-product-id="${item.id}" class="remove-from-cart-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition duration-300">
+                            Eliminar
+                        </button>
+                    `;
+                    cartItemsContainer.appendChild(cartItemLi);
+                });
+
+                // Add event listeners to "Remove" buttons
+                document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const productId = event.target.dataset.productId;
+                        removeFromCart(productId);
+                    });
+                });
+            }
+            updateCartTotal();
+            updateCartItemCount();
+        }
+
+        // Add item to cart
+        function addToCart(product) {
+            const existingItem = cartItems.find((item) => item.id === product.id);
+            if (existingItem) {
+                cartItems = cartItems.map((item) =>
+                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                );
+            } else {
+                cartItems = [...cartItems, { ...product, quantity: 1 }];
+            }
+            showMessage(`"${product.name}" añadido al carrito.`);
+            renderCart();
+        }
+
+        // Remove item from cart
+        function removeFromCart(productId) {
+            const existingItem = cartItems.find((item) => item.id === productId);
+            if (existingItem.quantity === 1) {
+                cartItems = cartItems.filter((item) => item.id !== productId);
+            } else {
+                cartItems = cartItems.map((item) =>
+                    item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+                );
+            }
+            showMessage('Artículo eliminado del carrito.');
+            renderCart();
+        }
+
+        // Apply discount code
+        function applyDiscount() {
+            const code = discountCodeInput.value.toUpperCase();
+            if (code === 'JULIUS20') {
+                discountApplied = 0.20; // 20% discount
+                showMessage('Código de descuento "JULIUS20" aplicado (20% de descuento).');
+            } else {
+                discountApplied = 0;
+                showMessage('Código de descuento inválido.');
+            }
+            updateCartTotal();
+        }
+
+        // Calculate and update total price
+        function updateCartTotal() {
+            const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+            cartTotalSpan.textContent = `$${(subtotal * (1 - discountApplied)).toFixed(2)}`;
+        }
+
+        // Update floating cart item count
+        function updateCartItemCount() {
+            const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+            if (totalItems > 0) {
+                cartItemCountSpan.textContent = totalItems;
+                cartItemCountSpan.classList.remove('hidden');
+            } else {
+                cartItemCountSpan.classList.add('hidden');
+            }
+        }
+
+        // Open/Close Cart Modal
+        function toggleCartModal(open) {
+            isCartOpen = open;
+            if (isCartOpen) {
+                cartModalOverlay.classList.add('open');
+                cartModalContent.classList.add('open');
+            } else {
+                cartModalOverlay.classList.remove('open');
+                cartModalContent.classList.remove('open');
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeFirebase(); // Initialize Firebase on DOMContentLoaded
+
+            // Mock product data (same as React version)
+            products = [
+                { id: '1', name: 'Camiseta Básica', price: 25.00, imageUrl: 'https://placehold.co/300x300/F0F0F0/333333?text=Camiseta' },
+                { id: '2', name: 'Pantalón Vaquero', price: 50.00, imageUrl: 'https://placehold.co/300x300/D0D0D0/333333?text=Pantalón' },
+                { id: '3', name: 'Sudadera con Capucha', price: 40.00, imageUrl: 'https://placehold.co/300x300/C0C0C0/333333?text=Sudadera' },
+                { id: '4', name: 'Chaqueta de Cuero', price: 90.00, imageUrl: 'https://placehold.co/300x300/B0B0B0/333333?text=Chaqueta' },
+                { id: '5', name: 'Vestido Floral', price: 65.00, imageUrl: 'https://placehold.co/300x300/A0A0A0/333333?text=Vestido' },
+                { id: '6', name: 'Zapatillas Deportivas', price: 75.00, imageUrl: 'https://placehold.co/300x300/909090/333333?text=Zapatillas' },
+            ];
+
+            renderProducts();
+            renderCart(); // Initial render of cart
+
+            floatingCartIcon.addEventListener('click', () => toggleCartModal(true));
+            closeCartModalButton.addEventListener('click', () => toggleCartModal(false));
+            cartModalOverlay.addEventListener('click', (event) => {
+                if (event.target === cartModalOverlay) {
+                    toggleCartModal(false);
+                }
+            });
+
+            applyDiscountButton.addEventListener('click', applyDiscount);
+            discountCodeInput.addEventListener('input', (event) => {
+                discountCodeInput.value = event.target.value.toUpperCase();
+            });
+
+            // WhatsApp button functionality
+            whatsappIcon.addEventListener('click', () => {
+                const whatsappNumber = '51987654321'; // Placeholder: Replace with actual number
+                const whatsappMessage = 'Hola, estoy interesado en sus productos.'; // Default message
+                const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+                window.open(url, '_blank');
+            });
+        });
+    </script>
+</body>
+</html>
